@@ -1,36 +1,9 @@
-enum Operators {
-  Like = "like",
-  NotLike = "not like",
-  EqualLike = "=like",
-  ILike = "ilike",
-  NotILike = "not ilike",
-  EqualILike = "=ilike",
-  In = "in",
-  NotIn = "not in",
-  Equal = "=",
-  Different = "!=",
-  GreaterThan = ">",
-  GreaterOrEqualThan = ">=",
-  LessThan = "<",
-  LessOrEqualThan = "<=",
-}
-
-const setValueForEqualComparison = (expression: string) =>
-  expression
-    .replace("%", "")
-    .replace(/\[|\]/g, "")
-    .replace(")", "")
-    .replace(/'/g, "")
-    .trim();
-
-const setValueForComparison = (expression: string) =>
-  setValueForEqualComparison(expression).replace(/\s/g, "").toLocaleLowerCase();
-
-const setArrayForComparison = (expression: string[]) => {
-  const regExpBrackets = /\[([^)]+)\]/g;
-  const values = expression.join(",")?.match(regExpBrackets);
-  return values ? values[0].replace("[", "").replace("]", "").split(",") : "";
-};
+import { Operators } from "./types";
+import {
+  setArrayForComparison,
+  setValueForComparison,
+  setValueForEqualComparison,
+} from "./utils";
 
 export const parseOdooDomain = (
   odooDomain: string,
@@ -46,7 +19,7 @@ export const parseOdooDomain = (
   let result;
 
   const conditions = odooDomainCleaned.map((condition) => {
-    if (["|", "&"].includes(condition.replace(/'/g, "").trim())) {
+    if (["|", "&"].includes(`${condition}`.replace(/'/g, "").trim())) {
       return condition;
     }
     if (!comparisons[comparisonCounter]) return;
@@ -63,28 +36,26 @@ export const parseOdooDomain = (
     switch (operator.replace(/\s/g, "")) {
       case Operators.EqualLike:
         return (
-          accountFieldName.toString().replace(/\s/g, "").toLowerCase() ===
+          `${accountFieldName}`.replace(/\s/g, "").toLowerCase() ===
           setValueForComparison(expression[2])
         );
       case Operators.NotLike:
         return (
-          accountFieldName.toString().replace(/\s/g, "").toLowerCase() !==
+          `${accountFieldName}`.replace(/\s/g, "").toLowerCase() !==
           setValueForComparison(expression[2])
         );
       case Operators.Equal:
         return (
-          accountFieldName.toString() ===
-          setValueForEqualComparison(expression[2])
+          `${accountFieldName}` === setValueForEqualComparison(expression[2])
         );
       case Operators.In:
         return setArrayForComparison(expression)?.includes(
-          accountFieldName.toString()
+          `${accountFieldName}`
         );
       default:
         return;
     }
   });
-
   for (let i = conditions.length; i > 0; i--) {
     if (i === conditions.length) {
       result = conditions[i - 1];
@@ -94,7 +65,7 @@ export const parseOdooDomain = (
         `${conditions[i - 2]}`.trim() === "'&'"
       ) {
         result =
-          conditions[i - 2] === "'&'"
+          `${conditions[i - 2]}`.trim() === "'&'"
             ? result && conditions[i - 1]
             : result || conditions[i - 1];
         conditions.splice(i - 2, 1);

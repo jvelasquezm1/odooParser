@@ -1,0 +1,16 @@
+export enum Operators {
+  Like = "like",
+  NotLike = "not like",
+  EqualLike = "=like",
+  ILike = "ilike",
+  NotILike = "not ilike",
+  EqualILike = "=ilike",
+  In = "in",
+  NotIn = "not in",
+  Equal = "=",
+  Different = "!=",
+  GreaterThan = ">",
+  GreaterOrEqualThan = ">=",
+  LessThan = "<",
+  LessOrEqualThan = "<=",
+}
