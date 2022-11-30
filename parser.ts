@@ -1,10 +1,7 @@
-const parseOdooDomain = (
-  odooDomain: string,
-  account: { [key: string]: string }
-) => {
+const parseOdooDomain = (odooDomain, account) => {
   const regExpParenthesis = /\(([^)]+)\)/g;
   const regExpBrackets = /\[([^)]+)\]/g;
-  const expressions = odooDomain
+  const odooDomainCleaned = odooDomain
     .replace(regExpParenthesis, "condition")
     .replace(/\[|\]/g, "")
     .replace(/\s/g, "")
@@ -14,7 +11,7 @@ const parseOdooDomain = (
   let comparisonCounter = 0;
   let result;
 
-  const conditions = expressions.map((condition) => {
+  const conditions = odooDomainCleaned.map((condition) => {
     if (condition.startsWith("'|'") || condition.startsWith("'&'")) {
       return condition;
     }
@@ -63,8 +60,9 @@ const parseOdooDomain = (
 };
 
 const odooDomain =
-  "['|',('account_id.code', '=like', '454%'), '&', ('account_id.code', '=like', '455%'), '|', ('account_id.code', '=like', '456%'), '|', ('account_id.code', '=like', '457%'), '|', ('account_id.code', '=like', '458%'), ('account_id.code', '=like', '459%')]";
-//   "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '&', ('account_id.user_type_id', 'in', [3]), ('account_id.user_type_id.type', '=', 'receivable')]";
+  // "['|',('account_id.code', '=like', '454%'), '&', ('account_id.code', '=like', '455%'), '|', ('account_id.code', '=like', '456%'), '|', ('account_id.code', '=like', '457%'), '|', ('account_id.code', '=like', '458%'), ('account_id.code', '=like', '459%')]";
+  //   "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '&', ('account_id.user_type_id', 'in', [3]), ('account_id.user_type_id.type', '=', 'receivable')]";
+  "[('account_id.code', '=like', '695%')]";
 
-const account = { code: "454", user_type_id: "3" };
+const account = { code: "696", user_type_id: "3" };
 console.log(parseOdooDomain(odooDomain, account));
