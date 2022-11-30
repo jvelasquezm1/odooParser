@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "ts-node parser.ts"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3"
+  }
+}
