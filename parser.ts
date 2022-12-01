@@ -1,11 +1,5 @@
 import { Operators } from "./types";
-import {
-  isLogicalOperator,
-  setArrayForComparison,
-  setStringForComparison,
-  setValueForComparison,
-  setValueForEqualComparison,
-} from "./utils";
+import { getConditionResult, isLogicalOperator } from "./utils";
 
 export const parseOdooDomain = (
   odooDomain: string,
@@ -58,28 +52,7 @@ export const parseOdooDomain = (
       accountFieldValue = account[fieldName][field[2] ? 1 : 0];
     }
 
-    switch (operator) {
-      case Operators.EqualLike:
-        return (
-          setStringForComparison(accountFieldValue) ===
-          setValueForComparison(expression[2])
-        );
-      case Operators.NotLike:
-        return (
-          setStringForComparison(accountFieldValue) !==
-          setValueForComparison(expression[2])
-        );
-      case Operators.Equal:
-        return (
-          `${accountFieldValue}` === setValueForEqualComparison(expression[2])
-        );
-      case Operators.In:
-        return setArrayForComparison(expression)?.includes(
-          `${accountFieldValue}`
-        );
-      default:
-        return;
-    }
+    return getConditionResult(operator, accountFieldValue, expression);
   });
   for (let i = expressions.length; i > 0; i--) {
     const currentCondition = expressions[i - 1];
