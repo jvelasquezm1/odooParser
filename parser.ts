@@ -75,10 +75,26 @@ export const parseOdooDomain = (
 };
 
 const odooDomain =
-  // "['|',('account_id.code', '=like', '454%'), '&', ('account_id.code', '=like', '455%'), '|', ('account_id.code', '=like', '456%'), '|', ('account_id.code', '=like', '457%'), '|', ('account_id.code', '=like', '458%'), ('account_id.code', '=like', '459%')]"
-  //   "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '&', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'receivable')]"
-  // "[('account_id.code', '=like', '695%')]"
   "['&', ('account_id.user_type_id', 'in', [9, 4]), '|', ('account_id.user_type_id.type', '=', 'Fixed Assets'), ('account_id.non_trade', '=', True)]";
+const odooDomain1 =
+  "['|',('account_id.code', '=like', '454%'), '&', ('account_id.code', '=like', '455%'), '|', ('account_id.code', '=like', '456%'), '|', ('account_id.code', '=like', '457%'), '|', ('account_id.code', '=like', '458%'), ('account_id.code', '=like', '459%')]";
+const odooDomain2 =
+  "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '&', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'receivable')]";
+const odooDomain3 = "[('account_id.code', '=like', '695%')]";
+const odooDomainError =
+  "['&',('account_id.code', '=like', '454%'), '&', ('account_id.user_type_id', '=' '13')]";
+const odooDomainError1 = "[]";
+const odooDomainError2 = "[('account_id.user_type_id', 'in' [3, 5, 7])]";
+const odooDomainError3 = "[('account_id', '=like', '454%')]";
 
 const account = { code: "454", user_type_id: [9, "Fixed Assets"] };
+
 console.log(parseOdooDomain(odooDomain, account));
+console.log(parseOdooDomain(odooDomain1, account));
+console.log(parseOdooDomain(odooDomain2, account));
+console.log(parseOdooDomain(odooDomain3, account));
+
+console.log(parseOdooDomain(odooDomainError, account));
+console.log(parseOdooDomain(odooDomainError1, account));
+console.log(parseOdooDomain(odooDomainError2, account));
+console.log(parseOdooDomain(odooDomainError3, account));
