@@ -14,3 +14,6 @@ export const setArrayForComparison = (expression: string[]) => {
   const values = expression.join(",")?.match(regExpBrackets);
   return values ? values[0].replace("[", "").replace("]", "").split(",") : "";
 };
+
+export const isLogicalOperator = (condition: string | boolean) =>
+  ["|", "&"].includes(`${condition}`.replace(/'/g, "").trim());

@@ -1,5 +1,6 @@
 import { Operators } from "./types";
 import {
+  isLogicalOperator,
   setArrayForComparison,
   setValueForComparison,
   setValueForEqualComparison,
@@ -19,15 +20,25 @@ export const parseOdooDomain = (
   let result;
 
   const conditions = odooDomainCleaned.map((condition) => {
-    if (["|", "&"].includes(`${condition}`.replace(/'/g, "").trim())) {
+    if (isLogicalOperator(condition)) {
       return condition;
     }
-    if (!comparisons[comparisonCounter]) return;
+    if (!comparisons[comparisonCounter]) throw new Error("Condition not found");
     const expression = comparisons[comparisonCounter].split(",") || [];
+    console.log(expression[1].replace(/'/g, ""));
+    if (expression.length < 3)
+      throw new Error(
+        `Format of condition must be '(field.fieldName, operator, value)' in ${expression}`
+      );
     comparisonCounter++;
-    const operator = expression[1].replace(/'/g, "");
     const field = expression[0].replace("(", "").replace(/'/g, "").split(".");
+    if (!field[1]) throw new Error(`No field name provided for ${expression}`);
+    const operator = expression[1].replace(/'/g, "");
+    if (!Object.values(Operators)?.includes(operator as Operators)) {
+      throw new Error(`Operator '${operator}' not supported`);
+    }
     const fieldName = field[1];
+
     if (!account[fieldName]) return false;
     let accountFieldName = account[fieldName];
     if (account[fieldName] instanceof Array) {
@@ -60,12 +71,9 @@ export const parseOdooDomain = (
     if (i === conditions.length) {
       result = conditions[i - 1];
     } else {
-      if (
-        `${conditions[i - 2]}`.trim() === "'|'" ||
-        `${conditions[i - 2]}`.trim() === "'&'"
-      ) {
+      if (isLogicalOperator(conditions[i - 2] || "")) {
         result =
-          `${conditions[i - 2]}`.trim() === "'&'"
+          `${conditions[i - 2]}`.replace(/'/g, "").trim() === "&"
             ? result && conditions[i - 1]
             : result || conditions[i - 1];
         conditions.splice(i - 2, 1);
