@@ -7,7 +7,7 @@ export const setValueForEqualComparison = (expression: string) =>
     .trim();
 
 export const setValueForComparison = (expression: string) =>
-  setValueForEqualComparison(expression).replace(/\s/g, "").toLocaleLowerCase();
+  setValueForEqualComparison(expression).replace(/\s/g, "").toLowerCase();
 
 export const setArrayForComparison = (expression: string[]) => {
   const regExpBrackets = /\[([^)]+)\]/g;
@@ -17,3 +17,6 @@ export const setArrayForComparison = (expression: string[]) => {
 
 export const isLogicalOperator = (condition: string | boolean) =>
   ["|", "&"].includes(`${condition}`.replace(/'/g, "").trim());
+
+export const setStringForComparison = (accountFieldValue: string) =>
+  `${accountFieldValue}`.replace(/\s/g, "").toLowerCase();
