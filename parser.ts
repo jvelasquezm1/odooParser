@@ -1,3 +1,5 @@
+import Stack from "ts-data.stack";
+
 import { Operators } from "./types";
 import { getConditionResult, isLogicalOperator } from "./utils";
 
@@ -8,6 +10,7 @@ export const parseOdooDomain = (
   const regExpParenthesis = /\(([^)]+)\)/g;
   // Get values on format '(field.fieldName, operator, value)'
   const conditions = odooDomain.match(regExpParenthesis) || [];
+
   // Create array setting 'condition' string where value on format '(field.fieldName, operator, value)'
   const odooDomainCleaned = odooDomain
     .replace(regExpParenthesis, "condition")
@@ -15,9 +18,9 @@ export const parseOdooDomain = (
     .split(",");
 
   let conditionCounter = 0;
-  let result;
+  let stack = new Stack();
 
-  // Create array with logical operators and boolean result of each condition
+  // Create array with logical operators and boolean stack of each condition
   const expressions = odooDomainCleaned.map((condition) => {
     if (isLogicalOperator(condition)) {
       return condition;
@@ -54,32 +57,33 @@ export const parseOdooDomain = (
 
     return getConditionResult(operator, accountFieldValue, expression);
   });
+  console.log(expressions);
   for (let i = expressions.length; i > 0; i--) {
     const currentCondition = expressions[i - 1];
-    const previousCondition = expressions[i - 2];
-    if (i === expressions.length) {
-      // Initialize result with last condition
-      result = currentCondition;
+    if (isLogicalOperator(currentCondition || "")) {
+      const firstElementToCompare = stack.pop();
+      const secondElementToCompare = stack.pop();
+      stack.push(
+        `${currentCondition}`.replace(/'/g, "").trim() === "&"
+          ? firstElementToCompare && secondElementToCompare
+          : firstElementToCompare || secondElementToCompare
+      );
     } else {
-      if (isLogicalOperator(previousCondition || "")) {
-        result =
-          `${previousCondition}`.replace(/'/g, "").trim() === "&"
-            ? result && currentCondition
-            : result || currentCondition;
-        // Remove logic operator so is not compared with a boolean
-        expressions.splice(i - 2, 1);
-      }
+      stack.push(currentCondition);
     }
   }
-  return result;
+  return stack.peek();
 };
 
-const odooDomain =
-  "['&', ('account_id.user_type_id', 'in', [9, 4]), '|', ('account_id.user_type_id.type', '=', 'Fixed Assets'), ('account_id.non_trade', '=', True)]";
+// const odooDomain =
+//   "['&', '|', '|', ('account_id.user_type_id', 'in', [9, 4]), ('account_id.user_type_id.type', '=', 'Fixed Assets'), ('account_id.code', '=like', '455%'), ('account_id.code', '=like', '456%')";
+
+// const odooDomain =
+//   "['&', ('account_id.user_type_id', 'in', [9, 4]), '|', ('account_id.user_type_id.type', '=', 'Fixed Assets'), ('account_id.non_trade', '=', True)]";
 const odooDomain1 =
   "['|',('account_id.code', '=like', '454%'), '&', ('account_id.code', '=like', '455%'), '|', ('account_id.code', '=like', '456%'), '|', ('account_id.code', '=like', '457%'), '|', ('account_id.code', '=like', '458%'), ('account_id.code', '=like', '459%')]";
-const odooDomain2 =
-  "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '&', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'receivable')]";
+const odooDomain =
+  "['&', ('account_id.user_type_id', 'in', [3, 5, 7]), '|', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'receivable')]";
 const odooDomain3 = "[('account_id.code', '=like', '695%')]";
 const odooDomainError =
   "['&',('account_id.code', '=like', '454%'), '&', ('account_id.user_type_id', '=' '13')]";
@@ -87,14 +91,14 @@ const odooDomainError1 = "[]";
 const odooDomainError2 = "[('account_id.user_type_id', 'in' [3, 5, 7])]";
 const odooDomainError3 = "[('account_id', '=like', '454%')]";
 
-const account = { code: "454", user_type_id: [9, "Fixed Assets"] };
+const account = { code: "454", user_type_id: [3, "receivable"] };
 
 console.log(parseOdooDomain(odooDomain, account));
-console.log(parseOdooDomain(odooDomain1, account));
-console.log(parseOdooDomain(odooDomain2, account));
-console.log(parseOdooDomain(odooDomain3, account));
+// console.log(parseOdooDomain(odooDomain1, account));
+// console.log(parseOdooDomain(odooDomain2, account));
+// console.log(parseOdooDomain(odooDomain3, account));
 
-console.log(parseOdooDomain(odooDomainError, account));
-console.log(parseOdooDomain(odooDomainError1, account));
-console.log(parseOdooDomain(odooDomainError2, account));
-console.log(parseOdooDomain(odooDomainError3, account));
+// console.log(parseOdooDomain(odooDomainError, account));
+// console.log(parseOdooDomain(odooDomainError1, account));
+// console.log(parseOdooDomain(odooDomainError2, account));
+// console.log(parseOdooDomain(odooDomainError3, account));

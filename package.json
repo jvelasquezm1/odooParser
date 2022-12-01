@@ -4,5 +4,8 @@
   },
   "devDependencies": {
     "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "ts-data.stack": "^1.0.6"
   }
 }
