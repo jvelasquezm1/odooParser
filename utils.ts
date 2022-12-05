@@ -21,7 +21,7 @@ const setStringForComparison = (accountFieldValue: string) =>
   `${accountFieldValue}`.replace(/\s/g, "").toLowerCase();
 
 export const isLogicalOperator = (condition: string | boolean) =>
-  ["|", "&"].includes(`${condition}`.replace(/'/g, "").trim());
+  ["|", "&", "!"].includes(`${condition}`.replace(/'/g, "").trim());
 
 export const getConditionResult = (
   operator: string,

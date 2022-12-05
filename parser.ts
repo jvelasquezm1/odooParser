@@ -61,13 +61,18 @@ export const parseOdooDomain = (
   for (let i = expressions.length; i > 0; i--) {
     const currentCondition = expressions[i - 1];
     if (isLogicalOperator(currentCondition || "")) {
-      const firstElementToCompare = stack.pop();
-      const secondElementToCompare = stack.pop();
-      stack.push(
-        `${currentCondition}`.replace(/'/g, "").trim() === "&"
-          ? firstElementToCompare && secondElementToCompare
-          : firstElementToCompare || secondElementToCompare
-      );
+      const logicalCondition = `${currentCondition}`.replace(/'/g, "").trim();
+      if (logicalCondition !== "!") {
+        const firstElementToCompare = stack.pop();
+        const secondElementToCompare = stack.pop();
+        stack.push(
+          logicalCondition === "&"
+            ? firstElementToCompare && secondElementToCompare
+            : firstElementToCompare || secondElementToCompare
+        );
+      } else {
+        stack.push(!stack.pop());
+      }
     } else {
       stack.push(currentCondition);
     }
