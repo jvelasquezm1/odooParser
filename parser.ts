@@ -60,7 +60,8 @@ export const parseOdooDomain = (
   console.log(expressions);
   for (let i = expressions.length - 1; i > 0; i--) {
     const currentCondition = expressions[i];
-    if (isLogicalOperator(currentCondition ?? "")) {
+    if (currentCondition === undefined) throw new Error("Condition not found");
+    if (isLogicalOperator(currentCondition)) {
       const logicalCondition = `${currentCondition}`.replace(/'/g, "").trim();
       if (logicalCondition !== "!") {
         const firstElementToCompare = stack.pop();
