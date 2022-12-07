@@ -9,7 +9,7 @@ export const parseOdooDomain = (
 ) => {
   const regExpParenthesis = /\(([^)]+)\)/g;
   // Get values on format '(field.fieldName, operator, value)'
-  const conditions = odooDomain.match(regExpParenthesis) || [];
+  const conditions = odooDomain.match(regExpParenthesis) ?? [];
 
   // Create array setting 'condition' string where value on format '(field.fieldName, operator, value)'
   const odooDomainCleaned = odooDomain
@@ -26,7 +26,7 @@ export const parseOdooDomain = (
       return condition;
     }
     if (!conditions[conditionCounter]) throw new Error("Condition not found");
-    const expression = conditions[conditionCounter].split(",") || [];
+    const expression = conditions[conditionCounter].split(",") ?? [];
     if (expression.length < 3)
       throw new Error(
         `Format of condition must be '(field.fieldName, operator, value)' in ${expression}`
@@ -43,7 +43,7 @@ export const parseOdooDomain = (
     const fieldName = field[1];
 
     // If field name not present on account return false in conditions
-    if (!account[fieldName] || account[fieldName].length === 0) return false;
+    if (!account[fieldName] ?? account[fieldName].length === 0) return false;
     let accountFieldValue = account[fieldName];
 
     // The accounts from odoo have their foreign keys in arrays
@@ -58,9 +58,9 @@ export const parseOdooDomain = (
     return getConditionResult(operator, accountFieldValue, expression);
   });
   console.log(expressions);
-  for (let i = expressions.length; i > 0; i--) {
-    const currentCondition = expressions[i - 1];
-    if (isLogicalOperator(currentCondition || "")) {
+  for (let i = expressions.length - 1; i > 0; i--) {
+    const currentCondition = expressions[i];
+    if (isLogicalOperator(currentCondition ?? "")) {
       const logicalCondition = `${currentCondition}`.replace(/'/g, "").trim();
       if (logicalCondition !== "!") {
         const firstElementToCompare = stack.pop();
@@ -68,7 +68,7 @@ export const parseOdooDomain = (
         stack.push(
           logicalCondition === "&"
             ? firstElementToCompare && secondElementToCompare
-            : firstElementToCompare || secondElementToCompare
+            : firstElementToCompare ?? secondElementToCompare
         );
       } else {
         stack.push(!stack.pop());
@@ -96,7 +96,7 @@ const odooDomainError1 = "[]";
 const odooDomainError2 = "[('account_id.user_type_id', 'in' [3, 5, 7])]";
 const odooDomainError3 = "[('account_id', '=like', '454%')]";
 
-const account = { code: "454", user_type_id: [3, "receivable"] };
+const account = { code: "454", user_type_id: [4, "receivable"] };
 
 console.log(parseOdooDomain(odooDomain, account));
 // console.log(parseOdooDomain(odooDomain1, account));
