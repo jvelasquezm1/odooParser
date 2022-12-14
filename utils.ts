@@ -122,3 +122,27 @@ export const evaluateCondition = (
 
   stack.push(conditionValue);
 };
+
+export const splitConditions = (
+  item: string,
+  odooDomainCleaned: string[],
+  index: number
+) => {
+  if (
+    isLogicalOperator(`${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim())
+  )
+    return `${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim();
+  let check = item;
+  let counter = index;
+  if (item.startsWith("(")) {
+    while (
+      odooDomainCleaned[counter] &&
+      !odooDomainCleaned[counter].endsWith(")")
+    ) {
+      if (odooDomainCleaned[counter + 1])
+        check = `${check},${odooDomainCleaned[counter + 1]}`;
+      counter++;
+    }
+    return check.replace("(", "").replace(")", "");
+  }
+};

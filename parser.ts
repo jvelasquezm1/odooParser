@@ -1,10 +1,10 @@
 import Stack from "ts-data.stack";
 
-import { Operators } from "./types";
 import {
   evaluateCondition,
   evaluateLogicalOperation,
   isLogicalOperator,
+  splitConditions,
 } from "./utils";
 
 export const parseOdooDomain = (
@@ -14,27 +14,7 @@ export const parseOdooDomain = (
   const odooDomainCleaned = odooDomain.replace(/\s/g, "").split(",");
   let stack = new Stack<boolean>();
   const expressions = odooDomainCleaned
-    .map((item, i) => {
-      if (
-        isLogicalOperator(
-          `${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim()
-        )
-      )
-        return `${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim();
-      let check = item;
-      let counter = i;
-      if (item.startsWith("(")) {
-        while (
-          odooDomainCleaned[counter] &&
-          !odooDomainCleaned[counter].endsWith(")")
-        ) {
-          if (odooDomainCleaned[counter + 1])
-            check = `${check},${odooDomainCleaned[counter + 1]}`;
-          counter++;
-        }
-        return check.replace("(", "").replace(")", "");
-      }
-    })
+    .map((item, i) => splitConditions(item, odooDomainCleaned, i))
     .filter((item): item is string => !!item);
 
   for (let i = expressions.length - 1; i >= 0; i--) {
