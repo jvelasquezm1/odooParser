@@ -1,81 +1,49 @@
 import Stack from "ts-data.stack";
 
 import { Operators } from "./types";
-import { getConditionResult, isLogicalOperator } from "./utils";
+import {
+  evaluateCondition,
+  evaluateLogicalOperation,
+  isLogicalOperator,
+} from "./utils";
 
 export const parseOdooDomain = (
   odooDomain: string,
   account: { [key: string]: any }
 ) => {
-  const regExpParenthesis = /\(([^)]+)\)/g;
-  // Get values on format '(field.fieldName, operator, value)'
-  const conditions = odooDomain.match(regExpParenthesis) ?? [];
-
-  // Create array setting 'condition' string where value on format '(field.fieldName, operator, value)'
-  const odooDomainCleaned = odooDomain
-    .replace(regExpParenthesis, "condition")
-    .replace(/\[|\]/g, "")
-    .split(",");
-
-  let conditionCounter = 0;
-  let stack = new Stack();
-
-  // Create array with logical operators and boolean stack of each condition
-  const expressions = odooDomainCleaned.map((condition) => {
-    if (isLogicalOperator(condition)) {
-      return condition;
-    }
-    if (!conditions[conditionCounter]) throw new Error("Condition not found");
-    const expression = conditions[conditionCounter].split(",") ?? [];
-    if (expression.length < 3)
-      throw new Error(
-        `Format of condition must be '(field.fieldName, operator, value)' in ${expression}`
-      );
-    // Increment conditionCounter to replace non logical operator condition in the correct position
-    conditionCounter++;
-
-    const field = expression[0].replace("(", "").replace(/'/g, "").split(".");
-    if (!field[1]) throw new Error(`No field name provided for ${expression}`);
-    const operator = expression[1].replace(/\s/g, "").replace(/'/g, "");
-    if (!Object.values(Operators)?.includes(operator as Operators)) {
-      throw new Error(`Operator '${operator}' not supported`);
-    }
-    const fieldName = field[1];
-
-    // If field name not present on account return false in conditions
-    if (!account[fieldName] ?? account[fieldName].length === 0) return false;
-    let accountFieldValue = account[fieldName];
-
-    // The accounts from odoo have their foreign keys in arrays
-    // Ex: condition on domain => ['&', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'Fixed Assets')]
-    // user_type_id on account from odoo => [ 8, 'Fixed Assets' ] => ['account_id.user_type_id', 'account_id.user_type_id.type']
-    // Other array foreign keys => group_id: [ 111, '285 Autres créances' ], root_id: [ 50056, '28' ], company_id: [ 1, 'Monitr' ]
-
-    if (account[fieldName] instanceof Array) {
-      accountFieldValue = account[fieldName][field[2] ? 1 : 0];
-    }
-
-    return getConditionResult(operator, accountFieldValue, expression);
-  });
-  console.log(expressions);
-  for (let i = expressions.length - 1; i > 0; i--) {
-    const currentCondition = expressions[i];
-    if (currentCondition === undefined) throw new Error("Condition not found");
-    if (isLogicalOperator(currentCondition)) {
-      const logicalCondition = `${currentCondition}`.replace(/'/g, "").trim();
-      if (logicalCondition !== "!") {
-        const firstElementToCompare = stack.pop();
-        const secondElementToCompare = stack.pop();
-        stack.push(
-          logicalCondition === "&"
-            ? firstElementToCompare && secondElementToCompare
-            : firstElementToCompare ?? secondElementToCompare
-        );
-      } else {
-        stack.push(!stack.pop());
+  const odooDomainCleaned = odooDomain.replace(/\s/g, "").split(",");
+  let stack = new Stack<boolean>();
+  const expressions = odooDomainCleaned
+    .map((item, i) => {
+      if (
+        isLogicalOperator(
+          `${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim()
+        )
+      )
+        return `${item}`.replace(/\[|\]/g, "").replace(/'/g, "").trim();
+      let check = item;
+      let counter = i;
+      if (item.startsWith("(")) {
+        while (
+          odooDomainCleaned[counter] &&
+          !odooDomainCleaned[counter].endsWith(")")
+        ) {
+          if (odooDomainCleaned[counter + 1])
+            check = `${check},${odooDomainCleaned[counter + 1]}`;
+          counter++;
+        }
+        return check.replace("(", "").replace(")", "");
       }
+    })
+    .filter((item): item is string => !!item);
+
+  for (let i = expressions.length - 1; i >= 0; i--) {
+    const currentCondition = expressions[i];
+    if (!currentCondition) throw new Error("Condition not found");
+    if (isLogicalOperator(currentCondition)) {
+      evaluateLogicalOperation(currentCondition, stack);
     } else {
-      stack.push(currentCondition);
+      evaluateCondition(currentCondition, stack, account);
     }
   }
   return stack.peek();
