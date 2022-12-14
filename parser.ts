@@ -26,7 +26,9 @@ export const parseOdooDomain = (
       evaluateCondition(currentCondition, stack, account);
     }
   }
-  return stack.peek();
+  if (stack.count() !== 1) throw new Error("Incorrect domain format");
+  const finalResult = stack.peek();
+  return finalResult;
 };
 
 // const odooDomain =
