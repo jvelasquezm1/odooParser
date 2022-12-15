@@ -381,3 +381,8 @@ const result = odooDomains.map((odooDomain) =>
   accounts.filter((account) => parseOdooDomain(odooDomain, account))
 );
 console.log(result.filter((r) => r.length > 0));
+
+//Filter to be applied to the accounts
+// accounts.filter(
+//   account => account.user_type_id[0] === 13 && account.used === true && reportingLines[0].create_uid[0] === account.create_uid[0],
+// )

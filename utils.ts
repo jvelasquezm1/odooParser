@@ -110,7 +110,7 @@ export const evaluateCondition = (
   const fieldName = field[1];
 
   // If field name not present on account return false in conditions
-  if (account[fieldName] === undefined ?? account[fieldName].length === 0)
+  if (account[fieldName] === undefined || account[fieldName].length === 0)
     return false;
   let accountFieldValue = account[fieldName];
   // The accounts from odoo have their foreign keys in arrays
