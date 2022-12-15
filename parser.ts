@@ -22,15 +22,30 @@ export const parseOdooDomain = (
 
   for (let i = expressions.length - 1; i >= 0; i--) {
     const currentCondition = expressions[i];
-    if (!currentCondition) throw new Error("Condition not found");
+    // Condition not found
+    if (!currentCondition) {
+      console.log(`Condition not found ${currentCondition}`);
+      return false;
+    }
     if (isLogicalOperator(currentCondition)) {
       evaluateLogicalOperation(currentCondition, stack);
     } else {
-      evaluateCondition(currentCondition, stack, account);
+      try {
+        evaluateCondition(currentCondition, stack, account);
+      } catch (e) {}
     }
   }
-  if (stack.count() === 0) return false;
-  if (stack.count() !== 1) throw new Error("Incorrect domain format");
+  // Incorrect domain format
+  if (stack.count() === 0) {
+    console.log(`Incorrect domain format ${expressions}`);
+    return false;
+  }
+
+  if (stack.count() !== 1) {
+    for (let i = stack.count(); i === 1; i--) {
+      stack.push(stack.pop() && stack.pop());
+    }
+  }
   const finalResult = stack.peek();
   return finalResult;
 };
@@ -39,7 +54,6 @@ const odooDomains = [
   "[('account_id.user_type_id', '=', 3)]",
   "['|', ('account_id.user_type_id', 'in', [9, 4]), '&', ('account_id.user_type_id.type', '=', 'payable'), ('account_id.non_trade', '=', True)]",
   "[]",
-  "[('account_id.user_type_id.type', '=', 'liquidity'), ('debit', '>', 0.0)]",
   "[('account_id.user_type_id.type', '=', 'receivable')]",
   "[('account_id.user_type_id', '=', 13)]",
   "[('account_id.user_type_id', '=', 15)]",
@@ -68,14 +82,14 @@ const odooDomains = [
   "['|', '|', '|', ('account_id.code', '=like', '670%'), ('account_id.code', '=like', '671%'), ('account_id.code', '=like', '672%'), ('account_id.code', '=like', '673%')]",
   "[('account_id.code', '=like', '691%')]",
   "[('account_id.code', '=like', '694%')]",
-  // "[('account_id.user_type_id.type', '=', 'receivable'), ('account_id.non_trade', '=', False)]",
-  // "[('account_id.user_type_id.type', '=', 'payable'), ('account_id.non_trade', '=', False)]",
+  "[('account_id.user_type_id.type', '=', 'receivable'), ('account_id.non_trade', '=', False)]",
+  "[('account_id.user_type_id.type', '=', 'payable'), ('account_id.non_trade', '=', False)]",
   "[('account_id.user_type_id', '=', 10)]",
   "[('account_id.user_type_id', '=', 12)]",
   "[('account_id.user_type_id', 'in', [13, 14, 17, 15, 16])]",
   "[('account_id.user_type_id', '=', 11)]",
   "[('account_id.user_type_id', '=', 12)]",
-  // "[('account_id.user_type_id.type', '=', 'liquidity'), ('credit', '>', 0.0)]",
+  "[('account_id.user_type_id.type', '=', 'liquidity'), ('credit', '>', 0.0)]",
   "[('account_id.user_type_id.type', '=', 'payable')]",
   "[('account_id.user_type_id', '=', 14)]",
   "[('account_id.user_type_id', '=', 16)]",
@@ -134,7 +148,7 @@ const odooDomains = [
   "[('account_id.code', '=like', '663%')]",
   "[('account_id.code', '=like', '26%')]",
   "['|', ('account_id.code', '=like', '54%'), '|', ('account_id.code', '=like', '55%'), '|', ('account_id.code', '=like', '56%'), '|', ('account_id.code', '=like', '57%'), ('account_id.code', '=like', '58%')]",
-  // "[('account_id.code', '=like', '14%'), ('account_id.user_type_id', '!=', 12)]",
+  "[('account_id.code', '=like', '14%'), ('account_id.user_type_id', '!=', 12)]",
   "[('account_id.code', '=like', '74%')]",
 ];
 
