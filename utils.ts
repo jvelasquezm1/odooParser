@@ -36,6 +36,10 @@ const getConditionResult = (
   accountFieldValue: any,
   expression: string[]
 ) => {
+  const typedFieldValue =
+    typeof accountFieldValue === "boolean"
+      ? accountFieldValue
+      : `${accountFieldValue}`;
   switch (operator) {
     case Operators.Like:
       return setStringForComparison(accountFieldValue).includes(
@@ -48,24 +52,20 @@ const getConditionResult = (
     case Operators.EqualLike:
       return (
         setStringForComparison(accountFieldValue) ===
-        setValueForComparison(expression[2])
+        setValueForComparison(expression[2] as string)
       );
     case Operators.In:
       return setArrayForComparison(expression)?.includes(
-        `${accountFieldValue}`
+        typedFieldValue as string
       );
     case Operators.NotIn:
       return !setArrayForComparison(expression)?.includes(
-        `${accountFieldValue}`
+        typedFieldValue as string
       );
     case Operators.Equal:
-      return (
-        `${accountFieldValue}` === setValueForEqualComparison(expression[2])
-      );
+      return typedFieldValue === setValueForEqualComparison(expression[2]);
     case Operators.Different:
-      return (
-        `${accountFieldValue}` !== setValueForEqualComparison(expression[2])
-      );
+      return typedFieldValue !== setValueForEqualComparison(expression[2]);
     default:
       return false;
   }
@@ -76,16 +76,18 @@ export const evaluateLogicalOperation = (
   stack: Stack<boolean>
 ) => {
   const logicalCondition = `${currentCondition}`.replace(/'/g, "").trim();
-  if (logicalCondition !== "!") {
-    const firstElementToCompare = stack.pop();
-    const secondElementToCompare = stack.pop();
-    stack.push(
-      logicalCondition === "&"
-        ? firstElementToCompare && secondElementToCompare
-        : firstElementToCompare || secondElementToCompare
-    );
-  } else {
-    stack.push(!stack.pop());
+  if (stack.count() > 0) {
+    if (logicalCondition !== "!") {
+      const firstElementToCompare = stack.pop();
+      const secondElementToCompare = stack.pop();
+      stack.push(
+        logicalCondition === "&"
+          ? firstElementToCompare && secondElementToCompare
+          : firstElementToCompare || secondElementToCompare
+      );
+    } else {
+      stack.push(!stack.pop());
+    }
   }
 };
 
@@ -99,7 +101,6 @@ export const evaluateCondition = (
     throw new Error(
       `Format of condition must be '(field.fieldName, operator, value)' in ${expression}`
     );
-
   const field = expression[0].replace(/'/g, "").split(".");
   if (!field[1]) throw new Error(`No field name provided for ${expression}`);
   const operator = expression[1].replace(/\s/g, "").replace(/'/g, "");
@@ -109,9 +110,9 @@ export const evaluateCondition = (
   const fieldName = field[1];
 
   // If field name not present on account return false in conditions
-  if (!account[fieldName] ?? account[fieldName].length === 0) return false;
+  if (account[fieldName] === undefined ?? account[fieldName].length === 0)
+    return false;
   let accountFieldValue = account[fieldName];
-
   // The accounts from odoo have their foreign keys in arrays
   // Ex: condition on domain => ['&', ('account_id.user_type_id', '=', 13), ('account_id.user_type_id.type', '=', 'Fixed Assets')]
   // user_type_id on account from odoo => [ 8, 'Fixed Assets' ] => ['account_id.user_type_id', 'account_id.user_type_id.type']
@@ -126,7 +127,6 @@ export const evaluateCondition = (
     accountFieldValue,
     expression
   );
-  console.log(operator, accountFieldValue, expression, conditionValue);
 
   stack.push(conditionValue);
 };
