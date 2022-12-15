@@ -1,16 +1,23 @@
 import Stack from "ts-data.stack";
 import { Operators } from "./types";
 
-const setValueForEqualComparison = (expression: string) =>
-  expression
+const setValueForEqualComparison = (expression: string) => {
+  const value = expression
     .replace(/%/g, "")
     .replace(/\[|\]/g, "")
     .replace(")", "")
     .replace(/'/g, "")
     .trim();
+  if (value === "True") return true;
+  if (value === "False") return false;
+  return value;
+};
 
-const setValueForComparison = (expression: string) =>
-  setValueForEqualComparison(expression).replace(/\s/g, "").toLowerCase();
+const setValueForComparison = (expression: string) => {
+  const value = setValueForEqualComparison(expression);
+  if (typeof value === "boolean") return value;
+  return value.replace(/\s/g, "").toLowerCase();
+};
 
 const setArrayForComparison = (expression: string[]) => {
   const regExpBrackets = /\[([^)]+)\]/g;
@@ -32,11 +39,11 @@ const getConditionResult = (
   switch (operator) {
     case Operators.Like:
       return setStringForComparison(accountFieldValue).includes(
-        setValueForComparison(expression[2])
+        setValueForComparison(expression[2]) as string
       );
     case Operators.NotLike:
       return !setStringForComparison(accountFieldValue).includes(
-        setValueForComparison(expression[2])
+        setValueForComparison(expression[2]) as string
       );
     case Operators.EqualLike:
       return (
@@ -119,6 +126,7 @@ export const evaluateCondition = (
     accountFieldValue,
     expression
   );
+  console.log(operator, accountFieldValue, expression, conditionValue);
 
   stack.push(conditionValue);
 };
