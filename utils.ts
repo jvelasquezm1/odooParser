@@ -66,6 +66,14 @@ const getConditionResult = (
       return typedFieldValue === setValueForEqualComparison(expression[2]);
     case Operators.Different:
       return typedFieldValue !== setValueForEqualComparison(expression[2]);
+    case Operators.GreaterThan:
+      return +typedFieldValue > +setValueForEqualComparison(expression[2]);
+    case Operators.GreaterOrEqualThan:
+      return +typedFieldValue >= +setValueForEqualComparison(expression[2]);
+    case Operators.LessThan:
+      return +typedFieldValue < +setValueForEqualComparison(expression[2]);
+    case Operators.LessOrEqualThan:
+      return +typedFieldValue <= +setValueForEqualComparison(expression[2]);
     default:
       return false;
   }

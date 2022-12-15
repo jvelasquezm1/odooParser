@@ -11,6 +11,7 @@ export const parseOdooDomain = (
   odooDomain: string,
   account: { [key: string]: any }
 ) => {
+  if (!odooDomain) return false;
   const odooDomainCleaned = odooDomain
     .slice(1, -1)
     .replace(/\s/g, "")
@@ -30,9 +31,7 @@ export const parseOdooDomain = (
     if (isLogicalOperator(currentCondition)) {
       evaluateLogicalOperation(currentCondition, stack);
     } else {
-      try {
-        evaluateCondition(currentCondition, stack, account);
-      } catch (e) {}
+      evaluateCondition(currentCondition, stack, account);
     }
   }
   // Incorrect domain format
@@ -386,3 +385,13 @@ console.log(result.filter((r) => r.length > 0));
 // accounts.filter(
 //   account => account.user_type_id[0] === 13 && account.used === true && reportingLines[0].create_uid[0] === account.create_uid[0],
 // )
+
+// console.log(
+//   parseOdooDomain("[('account_id.credit', '>', 0.0)]", {
+//     id: 150,
+//     user_type_id: [9, "payable"],
+//     non_trade: true,
+//     code: "31",
+//     credit: 10,
+//   })
+// );
