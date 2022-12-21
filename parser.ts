@@ -11,7 +11,9 @@ export const parseOdooDomain = (
   odooDomain: string,
   account: { [key: string]: any }
 ) => {
-  if (!odooDomain) return false;
+  if (odooDomain === "[]") {
+    return true;
+  }
   const odooDomainCleaned = odooDomain
     .slice(1, -1)
     .replace(/\s/g, "")
@@ -34,13 +36,7 @@ export const parseOdooDomain = (
       evaluateCondition(currentCondition, stack, account);
     }
   }
-  // Incorrect domain format
-  if (stack.count() === 0) {
-    console.log(`Incorrect domain format ${expressions}`);
-    return false;
-  }
-
-  if (stack.count() !== 1) {
+  if (stack.count() > 1) {
     for (let i = stack.count(); i === 1; i--) {
       stack.push(stack.pop() && stack.pop());
     }
